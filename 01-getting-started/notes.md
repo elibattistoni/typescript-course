@@ -20,3 +20,11 @@ IMPORTANT to compile a TypeScript file to JavaScript, you can use the command
 NB the compilation process might throw an error (compiler error) if there is something wrong with your TS file; but by default it will still compile your file to JS (we will learn how to suppress this behavior)
 
 # TypeScript Advantages -- overview
+- it makes writing clean code really easier
+- TS adds Types, and with them we have to be way more explicit about how things work and we can avoid many unaccepted and unnecessary errors by using Types
+- we can use modern IDEs like VSCode which have built-in TypeScript support which can pick up on these types and give us better auto completion and show errors before compiling the code (because they understand TypeScript)
+- there are other features added by TS:
+  - we can use Next Generation JavaScript features which you can write and use in our TS files and then they will get compiled to JS code to workarounds that work even in older browsers (it is a bit like Babel, but built into TypeScript)
+  - TS adds also certain features which only TS understands, like **Interfaces** and **Generics** (they are features that )
+
+Hi all, I don't know if you have already heard this, but today I got fired owing to the lack of projects on which I could work on. Starting from tomowwor I will not be at work anymore. Thanks everyone for the time here and good luck for your work.
