@@ -25,4 +25,7 @@ NB the compilation process might throw an error (compiler error) if there is som
 - we can use modern IDEs like VSCode which have built-in TypeScript support which can pick up on these types and give us better auto completion and show errors before compiling the code (because they understand TypeScript)
 - there are other features added by TS:
   - we can use Next Generation JavaScript features which you can write and use in our TS files and then they will get compiled to JS code to workarounds that work even in older browsers (it is a bit like Babel, but built into TypeScript)
-  - TS adds also certain features which only TS understands, like **Interfaces** and **Generics** (they are features that help us during development)
+  - TS adds also certain features which only TS understands, like **Interfaces** and **Gmenerics** (they are features that help us during development, that give us clearer errors and help us avoid even more errors)
+  - TS gives us also certain **meta-programming** features like **Decorators**
+  - TS is highlt configurable (there is a whole module about the compiler and how to configure it) --> you can make it stricktier or looser to ensure that it behaves in the exact way you want it to behave.
+  - with Modern Tooling, with modern IDEs you even get support in non-typescript projects: VS Code gives you better support in JS files because it is able to use some TS features under the hood, without you explicitly using TS.
