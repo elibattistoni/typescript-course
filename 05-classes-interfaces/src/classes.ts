@@ -287,10 +287,13 @@ NB classes with the abstract keyword cannot be instantiated
 class AccountingDepartment extends Deeepartment {
   private yearOf: number;
   private static instance: AccountingDepartment;
+  optionalProperty?: string;
 
-  private constructor(id: string, year: number) {
+  private constructor(id: string, year: number, optProp?: string) {
+    ///  NB in optProp you can either add ? like in the example or set a default value
     super(id, "Accounting");
     this.yearOf = year;
+    if (optProp) this.optionalProperty = optProp;
   }
 
   static getInstance() {

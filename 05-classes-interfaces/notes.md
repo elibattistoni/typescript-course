@@ -8,3 +8,10 @@ https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public
 
 # Javascript prototypes and inheritance & the prototype chain
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain
+
+
+## Interfaces
+https://www.typescriptlang.org/docs/handbook/2/objects.html
+
+## Classes
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes
