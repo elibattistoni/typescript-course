@@ -24,6 +24,7 @@ const person = new Person();
 //==============================================================================
 // ## Working with Decorator Factories
 //==============================================================================
+console.log("----------------- DECORATORS FACTORIES -----------------------");
 //! besides creating a decorator with the method above, we can also define a decorator factory
 //! which returns a decorator function, but allows us to configure it when we assign it as a decorator to something
 
@@ -32,6 +33,7 @@ const person = new Person();
 //! we have a function that returns another function
 function LoggerFactory(logString: string) {
   return (constructor: Function) => {
+    console.log("Rendering LoggerFactory Decorator...");
     console.log("Logging..........", logString);
     console.log("Constructor: ", constructor);
   };
@@ -53,6 +55,7 @@ class PersonNew {
 //! in this decorator factory we want to render some template (i.e. HTML code) into some place in the DOM (where there is this hookId)
 function WithTemplate(template: string, hookId: string) {
   return function (constructor: any) {
+    console.log("Rendering WithTemplate Decorator...");
     const hookEl = document.getElementById(hookId);
     // const p = new constructor(); // NB this is something else that you could do
     if (hookEl) {
@@ -66,7 +69,7 @@ function WithTemplate(template: string, hookId: string) {
 class PersonKKK {
   name = "Max";
   constructor() {
-    console.log("Creating a PersonNew object");
+    console.log("Creating a PersonKKK object");
   }
 }
 
@@ -105,3 +108,93 @@ That's the same thing Angular does here,
 in a more advanced way,
 and it is something that graders are perfect for.
 */
+
+//==============================================================================
+// ## Multiple Decorators
+//==============================================================================
+//! you can add more than one decorator to a class
+console.log("--------------- MULTIPLE DECORATORS --------------------");
+@LoggerFactory("PersonX Logger factory") //! this will be the 2nd decorator to run
+@WithTemplate("<h1>THIS IS H1</h1>", "app") //! this will be the 1st decorator to run
+class PersonX {
+  name = "Max";
+  constructor() {
+    console.log("Creating a PersonX object");
+  }
+}
+
+//! the  question is: in which oreder do these decorators execute? BOTTOM UP
+
+//==============================================================================
+// ## Where can decorators be added?
+//==============================================================================
+//! IMPORTANT we need a class for any decorator that we want to use, but we don't have to add all decorators directly to the class
+console.log("--------------- WHERE TO ADD DECORATORS --------------------");
+
+//% decorator for a class property!
+//! if you add a decorator to a property, it receives to arguments
+function Log(target: any, propertyName: string | Symbol) {
+  // NB target can be either a prototype (if we are dealing with an instance)
+  // NB or if we are dealing with a static one, it will be the constructor function
+  // NB since we do not know, the type of target should be any
+  console.log("property decorator --> ", target, propertyName);
+}
+
+//% decorator for accessors
+function Log2(target: any, name: string, descriptor: PropertyDescriptor) {
+  // NB target can be either a prototype (if we are dealing with an instance)
+  // NB or if we are dealing with a static one, it will be the constructor function
+  // NB since we do not know, the type of target should be any
+  // NB name is the name of the accessor
+  // NB property descriptor (PropertyDescriptor is a type built into typescript)
+  console.log("accessor decorator --> ", target, name, descriptor);
+}
+
+//% decorators for methods
+function Log3(
+  target: any,
+  name: string | Symbol,
+  descriptor: PropertyDescriptor
+) {
+  console.log("method decorator", target, name, descriptor);
+}
+
+//% decorator for parameter
+//!
+function Log4(
+  target: any,
+  name: string | Symbol,
+  position: number //! the position or number of the argument
+) {
+  //!name = name of the method in which we used thsi parameter
+  console.log("parameter decorator", target, name, position);
+}
+class Product {
+  //% decorator for a class property
+  //! you can add a decorator to a property (NB the logger will be executed when the class definition is executed)
+  @Log
+  title: string;
+
+  private _price: number;
+
+  //% decorator for accessor
+  @Log2
+  set price(val: number) {
+    if (val > 0) {
+      this._price = val;
+    } else {
+      throw new Error("Invalid price - should be positive!");
+    }
+  }
+
+  constructor(t: string, p: number) {
+    this.title = t;
+    this._price = p;
+  }
+
+  //% decorator for methods
+  @Log3
+  getPriceWithTax(@Log4 tax: number) {
+    return this._price * (1 + tax);
+  }
+}
