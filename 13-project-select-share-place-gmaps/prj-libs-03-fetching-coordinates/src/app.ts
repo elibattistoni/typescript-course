@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "axios"; //! NB you could also use the fetch() browser API, but fetch() is a bit weird when it comes to error handling
 
 const form = document.querySelector("form")!;
 const addressInput = document.getElementById("address")! as HTMLInputElement;
@@ -20,13 +20,13 @@ function searchAddressHandler(event: Event) {
         enteredAddress
       )}&key=${GOOGLE_API_KEY}`
     )
-    .then(response => {
+    .then((response) => {
       if (response.data.status !== "OK") {
         throw new Error("Could not fetch location!");
       }
       const coordinates = response.data.results[0].geometry.location;
     })
-    .catch(err => {
+    .catch((err) => {
       alert(err.message);
       console.log(err);
     });
