@@ -115,7 +115,7 @@ and it is something that graders are perfect for.
 //! you can add more than one decorator to a class
 console.log("--------------- MULTIPLE DECORATORS --------------------");
 @LoggerFactory("PersonX Logger factory") //! this will be the 2nd decorator to run
-@WithTemplate("<h1>THIS IS H1</h1>", "app") //! this will be the 1st decorator to run
+@WithTemplate("<h1>THIS IS H1</h1>", "app2") //! this will be the 1st decorator to run
 class PersonX {
   name = "Max";
   constructor() {
@@ -198,3 +198,191 @@ class Product {
     return this._price * (1 + tax);
   }
 }
+
+//! what is the order in which decorators run?
+//! IMPORTANT all decorators (property decorator, parameter decorator, method decorator, accessor decorator)
+//! EXECUTE WHEN YOU DEFINE THE CLASS, NOT WHEN THIS CLASS IS INSTANTIATED
+//! these are not decorators that run at runtime when you call a method ro when you work with a property
+
+//==============================================================================
+//## returning and changing a class in a class decorator
+//==============================================================================
+console.log("--------------- RETURN STUFF FROM DECORATORS -----------------");
+//! decorators can also return something
+//! what you can return depends on the kind of decorator that you are using
+
+//! e.g. inside the decorator function you can return a new constructor function that replaces the old one
+function WithTemplateNew(template: string, hookId: string) {
+  console.log("TEMPLATE FACTORY");
+  return function <T extends { new (...args: any[]): { name: string } }>(
+    originalConstructor: T
+  ) {
+    console.log("Rendering WithTemplate Decorator...");
+
+    //! basically here we return a class which in the end just creates a constructor function that is based on the original constructor function
+    return class extends originalConstructor {
+      //NB here basically we are replacing the originalConstructor function with a new constructor
+      //NB therefore the template should be rendered to the DOM only if I instantiate the object
+      //NB (and not all the time when this decorator function is executed -- which happens as soon as we define the class)
+      constructor(..._: any[]) {
+        super(); //! to call the originalConstructor function
+        console.log("Returning Rende");
+        const hookEl = document.getElementById(hookId);
+        if (hookEl) {
+          hookEl.innerHTML = template;
+          hookEl.querySelector("h1")!.textContent = this.name;
+        }
+      }
+    };
+  };
+}
+
+@WithTemplateNew("<h1>TITLEEEEEEE</h1>", "app3")
+class PersonJJ {
+  name = "Returning and changing a class in a class decorator";
+  constructor() {
+    console.log("Creating a PersonJJ object");
+  }
+}
+
+const persjj = new PersonJJ();
+console.log(persjj);
+
+// NB you can return values in other decorators, but not in all of them
+//! decorators where you canr eturn something are decorators you can add to methods or to accessors
+//! decorators on parameters and on properties can return something, but TS will ignore them (non è che non puoi ritornare valori, puoi, ma vengono ignorati)
+//! on method and accessor decorators you can return new property descriptors
+//! NB to learn more about property descriptors --> https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty (it is a vanilla JS feature)
+
+//! accessor decorator
+function Log2New(
+  target: any,
+  name: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor {
+  console.log("accessor decorator --> ", target, name, descriptor);
+  return {
+    // here you can set the set keyword,
+    // the get keyword, the configurable or the
+    // enumerable property and change how this accessor
+    // or method is configured.
+  };
+}
+
+//! method decorator (return something from a method decorator) --> create an "autobind" decorator
+// when we click the button, we execute a method on the object
+
+function Autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
+  //! this decorator should set the this keyword to the object it belongs to
+  //! how?
+  //! 1. get access to the method that should be called --> throught the descriptor (the value property of this object points to the original function)
+  const originalMethod = descriptor.value;
+  const adjustedDescriptor: PropertyDescriptor = {
+    configurable: true,
+    enumerable: false,
+    get() {
+      const boundFn = originalMethod.bind(this);
+      //! here, "this" will refer to the object that is responsible for triggering this getter method
+      //! the getter method will be triggered by the concrete object to which it belongs
+      //! so "this" here will refer to the object on which we originally defined the method
+      return boundFn;
+    },
+  };
+  return adjustedDescriptor;
+  // NB with this TS will replace the old method descriptor (the old method configuration) with this new configuration, which adds this extra getter layer
+}
+
+class Printer {
+  message = "This works";
+
+  @Autobind
+  showMessage() {
+    console.log(this.message);
+  }
+}
+const myPrinter = new Printer();
+const button = document.querySelector("button")!;
+//! solution 1: use bind()
+// button.addEventListener("click", myPrinter.showMessage.bind(myPrinter)); // NB this is if showMessage() does not have the Autobind decorator
+//! solution 2: create a decorator that automatically binds this to the surrounding class (i.e. to the object the .showMessage() method belongs to)
+button.addEventListener("click", myPrinter.showMessage);
+
+//==============================================================================
+//## Validation with Decorators
+//==============================================================================
+console.log("--------------- VALIDATION WITH DECORATORS -----------------");
+
+interface ValidatorConfig {
+  [property: string]: {
+    [validatableProp: string]: string[]; // ['required', 'positive']
+  };
+}
+
+const registeredValidators: ValidatorConfig = {};
+
+function Required(target: any, propName: string) {
+  registeredValidators[target.constructor.name] = {
+    ...registeredValidators[target.constructor.name],
+    [propName]: ["required"],
+  };
+}
+
+function PositiveNumber(target: any, propName: string) {
+  registeredValidators[target.constructor.name] = {
+    ...registeredValidators[target.constructor.name],
+    [propName]: ["positive"],
+  };
+}
+
+function validate(obj: any) {
+  const objValidatorConfig = registeredValidators[obj.constructor.name];
+  if (!objValidatorConfig) {
+    return true;
+  }
+  let isValid = true;
+  for (const prop in objValidatorConfig) {
+    for (const validator of objValidatorConfig[prop]) {
+      switch (validator) {
+        case "required":
+          isValid = isValid && !!obj[prop];
+          break;
+        case "positive":
+          isValid = isValid && obj[prop] > 0;
+          break;
+      }
+    }
+  }
+  return isValid;
+}
+
+//! NB here we include the validation logic inside the class with decorators
+class Course {
+  @Required
+  title: string;
+  @PositiveNumber
+  price: number;
+
+  constructor(t: string, p: number) {
+    this.title = t;
+    this.price = p;
+  }
+}
+
+const courseForm = document.querySelector("form")!;
+
+courseForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const titleEl = document.getElementById("title") as HTMLInputElement;
+  const priceEl = document.getElementById("price") as HTMLInputElement;
+
+  const title = titleEl.value;
+  const price = +priceEl.value;
+
+  const createdCourse = new Course(title, price);
+
+  if (!validate(createdCourse)) {
+    alert("Invalid input, please try again!");
+    return;
+  }
+  console.log(createdCourse);
+});

@@ -5,3 +5,6 @@ NB with decorators we can guarantee that a class is use correctly, or a method i
 
 IMPORTANT CONFIGURATION STEP
 - in the tsconfig.json file --> make sure that "target": "es6" + at the bottom add "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */
+
+
+More on decorators --> https://www.typescriptlang.org/docs/handbook/decorators.html
